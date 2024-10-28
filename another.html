@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Another</title>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
+            body {
+                font-family: 'Poppins', sans-serif;
+                background: linear-gradient(135deg, #4e1900, #bb5400);
+                color: white;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
+                height: 100vh;
+                overflow: hidden;
+            }
+
+            h1 {
+                font-size: 45px;
+                font-weight: 500;
+                text-align: center;
+                margin-top: 18px;
+                color: #00ff9d;
+                text-shadow: 0 0 10px rgba(0, 255, 157, 0.5);
+                animation: fadeIn 2s ease-in-out;
+                position: absolute;
+                top: 2px;
+                left: 1rem;
+            }
+
+            .box {
+                display: flex;
+                justify-content: center;
+                margin-top: 20px;
+                animation: slideIn 1.5s ease-out;
+                top: 2px;
+            }
+
+            .box a {
+                color: #ff6600;
+                text-decoration: none;
+                font-size: 20px;
+                margin: 0 15px;
+                padding: 10px 20px;
+                border-radius: 5px;
+                background: linear-gradient(135deg, #4e1900, #bb5400);
+                transition: background-color 0.3s ease, transform 0.3s ease;
+            }
+
+            .box a:hover {
+                background: linear-gradient(135deg, #4e1900, #bb5400);
+                color: #000;
+                transform: translateY(-5px);
+            }
+
+            #container {
+                display: flex;
+                flex: 1;
+                padding: 20px;
+                animation: fadeInUp 1.5s ease-out;
+            }
+
+            #sidebar {
+                width: 300px;
+                background: linear-gradient(135deg, #4e1900, #bb5400);
+                padding: 20px;
+                border-right: 2px solid #ff7300;
+                box-shadow: 0 0 10px rgba(197, 82, 5, 0.945);
+                overflow-y: auto;
+            }
+
+            #sidebar button {
+                display: block;
+                width: 100%;
+                padding: 15px;
+                margin-bottom: 20px;
+                font-size: 16px;
+                color: #000;
+                background: linear-gradient(135deg, #4e1900, #bb5400);
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+            }
+
+            #sidebar button:hover {
+                background: linear-gradient(135deg, #4e1900, #bb5400);
+            }
+
+            #main {
+                flex: 1;
+                background-color: rgba(255, 255, 255, 0.1);
+                padding: 20px;
+                border-left: 2px solid #ff8800;
+                display: flex;
+                flex-direction: column;
+                position: relative;
+                animation: fadeInUp 2s ease;
+            }
+
+            #note-content {
+                width: 790px;
+                height: 450px;
+                border-radius: 6px;
+                border: 1px solid #ff5e00;
+                background-color: transparent;
+                color: #ffffff;
+                padding: 15px;
+                font-size: 16px;
+                resize: none;
+                box-shadow: 0 0 10px #f14400;
+                animation: fadeIn 2.5s ease;
+                font-family: Arial, Helvetica, sans-serif;
+            }
+
+            #actions {
+                display: flex;
+                justify-content: space-between;
+                margin-top: 20px;
+            }
+
+            #actions button {
+                padding: 10px 20px;
+                font-size: 16px;
+                background-color: transparent;
+                color: black;
+                border: 2px solid transparent;  
+                border-radius: 5px;
+                cursor: pointer;
+                transition: background-color 0.3s ease, color 0.3s ease;
+            }
+
+            #actions button:hover {
+                background-color: #ff3300;
+                color: #000;
+            }
+
+            /* Animations */
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+                to {
+                    opacity: 1;
+                }
+            }
+
+            @keyframes fadeInUp {
+                from {
+                    transform: translateY(20px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            @keyframes slideIn {
+                from {
+                    transform: translateX(-50px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            
+        </style>
+    </head>
+    <body>
+        <p><a href="claculate.html" style="position: absolute; top: 10px; right: 2rem; color: #000; text-decoration: none; font-size: 24px;">Back</a></p>
+        <div id="container">
+            <div id="sidebar">
+                <button id="new-folder">New Folder</button>
+                <button id="toggle-folders">Hide Folders</button>
+                <div id="folder-container">
+                    <h3>Folders</h3>
+                    <ul id="folders"></ul>
+                </div>
+                <h3>Notes</h3>
+                <ul id="notes-list"></ul>
+            </div>
+            <div id="main">
+                <textarea id="note-content" placeholder="Write your note here..."></textarea>
+                <div id="actions">
+                    <button id="save-note">Save Note</button>
+                    <button id="delete-note">Delete Note</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const folderContainer = document.getElementById('folder-container');
+            const foldersList = document.getElementById('folders');
+            const notesList = document.getElementById('notes-list');
+            const noteContent = document.getElementById('note-content');
+            const saveNoteButton = document.getElementById('save-note');
+            const deleteNoteButton = document.getElementById('delete-note');
+            const toggleFoldersButton = document.getElementById('toggle-folders');
+            const newFolderButton = document.getElementById('new-folder');
+
+            let currentFolder = null;
+            let currentNote = null;
+
+            function init() {
+                loadFolders();
+                loadNotes();
+            }
+
+            function loadFolders() {
+                const folders = JSON.parse(localStorage.getItem('folders')) || [];
+                foldersList.innerHTML = '';
+                folders.forEach(folder => {
+                    const li = document.createElement('li');
+                    li.textContent = folder;
+                    li.addEventListener('click', () => selectFolder(folder));
+                    foldersList.appendChild(li);
+                });
+            }
+
+            function loadNotes() {
+                const notes = JSON.parse(localStorage.getItem('notes')) || {};
+                notesList.innerHTML = '';
+                if (currentFolder && notes[currentFolder]) {
+                    notes[currentFolder].forEach(note => {
+                        const li = document.createElement('li');
+                        li.textContent = note.title;
+                        li.addEventListener('click', () => loadNoteContent(note));
+                        notesList.appendChild(li);
+                    });
+                }
+            }
+
+            function selectFolder(folder) {
+                currentFolder = folder;
+                loadNotes();
+            }
+
+            function loadNoteContent(note) {
+                currentNote = note;
+                noteContent.value = note.content;
+            }
+
+            function saveNote() {
+                if (!currentFolder) return;
+                const notes = JSON.parse(localStorage.getItem('notes')) || {};
+                const noteTitle = prompt('Enter note title:', '');
+                if (!noteTitle) return;
+                if (!notes[currentFolder]) notes[currentFolder] = [];
+                const noteIndex = notes[currentFolder].findIndex(n => n.title === noteTitle);
+                if (noteIndex !== -1) {
+                    notes[currentFolder][noteIndex].content = noteContent.value;
+                } else {
+                    notes[currentFolder].push({ title: noteTitle, content: noteContent.value });
+                }
+                localStorage.setItem('notes', JSON.stringify(notes));
+                loadNotes();
+            }
+
+            function deleteNote() {
+                if (!currentFolder || !currentNote) return;
+                const notes = JSON.parse(localStorage.getItem('notes')) || {};
+                notes[currentFolder] = notes[currentFolder].filter(note => note !== currentNote);
+                localStorage.setItem('notes', JSON.stringify(notes));
+                loadNotes();
+                noteContent.value = '';
+                currentNote = null;
+            }
+
+            function addNewFolder() {
+                const folderName = prompt('Enter folder name:', '');
+                if (!folderName) return;
+                let folders = JSON.parse(localStorage.getItem('folders')) || [];
+                if (!folders.includes(folderName)) {
+                    folders.push(folderName);
+                    localStorage.setItem('folders', JSON.stringify(folders));
+                    loadFolders();
+                }
+            }
+
+            function toggleFolders() {
+                folderContainer.style.display = folderContainer.style.display === 'none' ? 'block' : 'none';
+            }
+
+            newFolderButton.addEventListener('click', addNewFolder);
+            saveNoteButton.addEventListener('click', saveNote);
+            deleteNoteButton.addEventListener('click', deleteNote);
+            toggleFoldersButton.addEventListener('click', toggleFolders);
+
+            init();
+        </script>
+    </body>
+</html>
+
